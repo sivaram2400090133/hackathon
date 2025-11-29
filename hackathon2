@@ -1,0 +1,78 @@
+import React, {useState} from 'react'
+import API from '../api'
+export default function Dashboard(){
+const [studentId, setStudentId] = useState(1)
+const [data, setData] = useState(null)
+const [courseId, setCourseId] = useState(1)
+const [courseAvg, setCourseAvg] = useState(null)
+async function loadStudent(){
+try{
+const res = await API.get(`/students/${studentId}/dashboard`)
+setData(res.data)
+}catch(e){
+alert('Failed to fetch student')
+}
+}
+async function loadCourse(){
+try{
+const res = await API.get(`/courses/${courseId}/average`)
+setCourseAvg(res.data.average_percent)
+}catch(e){
+alert('Failed to fetch course')
+}
+}
+return (
+<div>
+<div style={{display:'flex', gap:20}}>
+<div style={{flex:1, padding:10, border:'1px solid #ddd',
+borderRadius:8}}>
+<h3>Student Dashboard</h3>
+<div>
+<label>Student ID: </label>
+<input type='number' value={studentId}
+onChange={e=>setStudentId(e.target.value)} />
+<button onClick={loadStudent} style={{marginLeft:8}}>Load</
+button>
+</div>
+{data && (
+<div style={{marginTop:12}}>
+<h4>{data.student.first_name} {data.student.last_name} (Grade
+{data.student.grade_level})</h4>
+<p><strong>Average %:</strong> {data.kpis.average_percent ??
+'N/A'}</p>
+<p><strong>Chronic absence %:</strong>
+{data.kpis.chronic_absence_pct ?? 'N/A'}</p>
+<p><strong>At risk:</strong> {data.at_risk ? 'Yes' : 'No'}</p>
+<h5>Last 5 assessments</h5>
+<ul>
+{data.kpis.last_five_assessments.map((a,idx)=>(
+<li key={idx}>{a.date} — assessment {a.assessment_id} —
+{a.percent}%</li>
+))}
+</ul>
+</div>
+)}
+</div>
+<div style={{flex:1, padding:10, border:'1px solid #ddd',
+borderRadius:8}}>
+<h3>Course Analytics</h3>
+<div>
+<label>Course ID: </label>
+<input type='number' value={courseId}
+onChange={e=>setCourseId(e.target.value)} />
+<button onClick={loadCourse} style={{marginLeft:8}}>Load</button>
+</div>
+{courseAvg !== null && (
+<div style={{marginTop:12}}>
+<p><strong>Course Average %:</strong> {courseAvg}</p>
+</div>
+)}
+</div>
+</div>
+<div style={{marginTop:20}}>
+<p>Tip: Use the backend sample data (initialized automatically) —
+students IDs 1 and 2 exist.</p>
+</div>
+</div>
+)
+}
